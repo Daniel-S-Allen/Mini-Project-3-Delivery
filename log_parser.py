@@ -4,46 +4,48 @@ import re
 import datetime
 import csv
 import os
+from typing_extensions import override
 
 class LogEntry:
-    def __init__(self, timestamp, severity, source, message):
-        self.timestamp = timestamp
-        self.severity = severity
-        self.source = source
-        self.message = message
+    def __init__(self, timestamp:str, severity:str, source:str, message:str):
+        self.timestamp:str = timestamp
+        self.severity:str = severity
+        self.source:str = source
+        self.message:str = message
     
+    @override
     def __str__(self):
         return f"[{self.timestamp}] {self.severity} - {self.source}: {self.message}"
 
 class LogParser:
     def __init__(self):
         # Regular expressions for common log formats
-        self.patterns = {
+        self.patterns:dict[str,re.Pattern[str]] = {
             'standard': re.compile(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (\w+) - ([^:]+): (.+)$'),
             'apache': re.compile(r'^(\S+) \S+ \S+ \[([^]]+)\] "([^"]+)" (\d+) (\d+) "([^"]*)" "([^"]*)"$'),
             'syslog': re.compile(r'^(\w{3} \d{2} \d{2}:\d{2}:\d{2}) (\S+) ([^:]+): (.+)$')
         }
     
-    def _detect_format(self, line):
+    def _detect_format(self, line:str):
         """Detect the format of a log line"""
         for format_name, pattern in self.patterns.items():
             if pattern.match(line):
                 return format_name
         return None
     
-    def parse_file(self, file_path):
+    def parse_file(self, file_path:str):
         """Parse a log file and return a list of LogEntry objects"""
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Log file not found: {file_path}")
         
-        log_entries = []
+        log_entries: list[LogEntry] = []
         detected_format = None
         
         with open(file_path, 'r') as f:
             # Try to detect format from first line
             first_line = f.readline().strip()
             detected_format = self._detect_format(first_line)
-            f.seek(0)  # Reset to file beginning
+            _ = f.seek(0)  # Reset to file beginning
             
             if detected_format == 'standard':
                 for line in f:
@@ -63,7 +65,7 @@ class LogParser:
             else:
                 # If format is unrecognized, try CSV
                 try:
-                    f.seek(0)  # Reset to file beginning
+                    _ = f.seek(0)  # Reset to file beginning
                     reader = csv.reader(f)
                     header = next(reader)
                     
@@ -87,9 +89,9 @@ class LogParser:
                                     source=source,
                                     message=message
                                 ))
-                except Exception as e:
+                except Exception as _:
                     # If CSV parsing fails, parse line by line with best guess
-                    f.seek(0)  # Reset to file beginning
+                    _ = f.seek(0)  # Reset to file beginning
                     for line in f:
                         parts = line.strip().split()
                         if len(parts) >= 4:
@@ -108,7 +110,7 @@ class LogParser:
         
         return log_entries
     
-    def _parse_standard_format(self, line):
+    def _parse_standard_format(self, line:str):
         """Parse a log line in standard format"""
         match = self.patterns['standard'].match(line.strip())
         if match:
@@ -116,7 +118,7 @@ class LogParser:
             return LogEntry(timestamp, severity, source, message)
         return None
     
-    def _parse_apache_format(self, line):
+    def _parse_apache_format(self, line:str):
         """Parse a log line in Apache format"""
         match = self.patterns['apache'].match(line.strip())
         if match:
@@ -144,7 +146,7 @@ class LogParser:
             )
         return None
     
-    def _parse_syslog_format(self, line):
+    def _parse_syslog_format(self, line:str):
         """Parse a log line in syslog format"""
         match = self.patterns['syslog'].match(line.strip())
         if match:

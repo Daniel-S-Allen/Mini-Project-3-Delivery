@@ -1,13 +1,17 @@
 # log_analyzer.py - Analyzes log entries and extracts metrics
 
+from typing import Any
+
+
 import re
 import datetime
 from collections import Counter, defaultdict
 
+from log_parser import LogEntry
 class LogAnalyzer:
-    def filter_by_date(self, log_entries, start_date, end_date):
+    def filter_by_date(self, log_entries:list[LogEntry], start_date:str, end_date:str):
         """Filter log entries by date range"""
-        filtered_entries = []
+        filtered_entries: list[LogEntry] = []
         
         try:
             # Parse start and end dates
@@ -45,11 +49,11 @@ class LogAnalyzer:
             
         return filtered_entries
     
-    def filter_by_severity(self, log_entries, severity):
+    def filter_by_severity(self, log_entries:list[LogEntry], severity:str) -> list[LogEntry]:
         """Filter log entries by severity level"""
         return [entry for entry in log_entries if entry.severity == severity]
     
-    def filter_by_pattern(self, log_entries, pattern):
+    def filter_by_pattern(self, log_entries:list[LogEntry], pattern:str) -> list[LogEntry]:
         """Filter log entries by regex pattern"""
         try:
             regex = re.compile(pattern)
@@ -57,9 +61,9 @@ class LogAnalyzer:
         except re.error as e:
             raise ValueError(f"Invalid regex pattern: {e}")
     
-    def generate_statistics(self, log_entries):
+    def generate_statistics(self, log_entries:list[LogEntry]):
         """Generate statistics from log entries"""
-        stats = {}
+        stats: dict[str, Any] = {}
         
         # Count entries by severity
         severity_counts = Counter(entry.severity for entry in log_entries)
@@ -70,7 +74,7 @@ class LogAnalyzer:
         stats['source_counts'] = dict(source_counts)
         
         # Group by hour of day to see time patterns
-        hour_counts = defaultdict(int)
+        hour_counts: defaultdict[int, int] = defaultdict(int)
         for entry in log_entries:
             try:
                 # Try different timestamp formats
@@ -93,9 +97,9 @@ class LogAnalyzer:
         stats['error_rate'] = (error_entries / total_entries) * 100 if total_entries > 0 else 0
         
         # Find common patterns in messages
-        word_counts = Counter()
+        word_counts: Counter[str] = Counter()
         for entry in log_entries:
-            words = re.findall(r'\b\w+\b', entry.message.lower())
+            words: list[str] = re.findall(r'\b\w+\b', entry.message.lower())
             word_counts.update(words)
         
         # Filter out common words
@@ -108,9 +112,9 @@ class LogAnalyzer:
         
         return stats
     
-    def check_alerts(self, log_entries, threshold):
+    def check_alerts(self, log_entries:list[LogEntry], threshold:float) -> list[str] | None:
         """Check if error rate exceeds threshold and generate alerts"""
-        alerts = []
+        alerts: list[str] = []
         
         # Count entries by severity
         severity_counts = Counter(entry.severity for entry in log_entries)
@@ -124,7 +128,7 @@ class LogAnalyzer:
             alerts.append(f"ALERT: Error rate of {error_rate:.2f}% exceeds threshold of {threshold:.2f}%")
         
         # Group errors by source
-        source_errors = defaultdict(int)
+        source_errors: defaultdict[str, int] = defaultdict(int)
         for entry in log_entries:
             if entry.severity in ["ERROR", "CRITICAL"]:
                 source_errors[entry.source] += 1

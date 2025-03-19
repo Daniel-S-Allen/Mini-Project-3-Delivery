@@ -1,10 +1,14 @@
 # report_generator.py - Generates reports from log analysis
 
+from collections import defaultdict
 import csv
 import io
+from typing_extensions import Any, cast
+
+from log_parser import LogEntry
 
 class ReportGenerator:
-    def generate_report(self, log_entries, format="txt", stats=None, alerts=None):
+    def generate_report(self, log_entries:list[LogEntry], format:str="txt", stats:dict[str,Any]|None=None, alerts:list[str]|None=None):
         """Generate a report from log entries and statistics"""
         if format == "txt":
             return self._generate_txt_report(log_entries, stats, alerts)
@@ -13,15 +17,15 @@ class ReportGenerator:
         else:
             raise ValueError(f"Unsupported format: {format}")
     
-    def _generate_txt_report(self, log_entries, stats, alerts):
+    def _generate_txt_report(self, log_entries:list[LogEntry], stats:dict[str,Any]|None, alerts:list[str]|None):
         """Generate a plain text report"""
-        output = []
+        output: list[str] = []
         
         # Add header
-        output.append("=" * 80)
-        output.append("LogLens Analysis Report")
-        output.append("=" * 80)
-        output.append("")
+        _ = output.append("=" * 80)
+        _ = output.append("LogLens Analysis Report")
+        _ = output.append("=" * 80)
+        _ = output.append("")
         
         # Add summary
         output.append(f"Total log entries analyzed: {len(log_entries)}")
@@ -42,29 +46,29 @@ class ReportGenerator:
             
             # Severity distribution
             output.append("Severity Distribution:")
-            for severity, count in stats['severity_counts'].items():
+            for severity, count in cast(dict[str,int],stats['severity_counts']).items():
                 output.append(f"  {severity}: {count}")
             output.append("")
             
             # Source distribution
             output.append("Source Distribution:")
-            for source, count in stats['source_counts'].items():
+            for source, count in cast(dict[str,int],stats['source_counts']).items():
                 output.append(f"  {source}: {count}")
             output.append("")
             
             # Hour distribution
             output.append("Hour Distribution:")
-            for hour, count in stats['hour_distribution'].items():
+            for hour, count in cast(defaultdict[int,int],stats['hour_distribution']).items():
                 output.append(f"  {hour:02d}:00 - {hour:02d}:59: {count}")
             output.append("")
             
             # Error rate
-            output.append(f"Error Rate: {stats['error_rate']:.2f}%")
+            output.append(f"Error Rate: {cast(int,stats['error_rate']):.2f}%")
             output.append("")
             
             # Common terms
             output.append("Common Terms:")
-            for term, count in stats['common_terms'].items():
+            for term, count in cast(dict[str,int],stats['common_terms']).items():
                 output.append(f"  {term}: {count}")
             output.append("")
         
@@ -79,7 +83,7 @@ class ReportGenerator:
         
         return "\n".join(output)
     
-    def _generate_csv_report(self, log_entries, stats, alerts):
+    def _generate_csv_report(self, log_entries:list[LogEntry], stats:dict[str,Any]|None, alerts:list[str]|None):
         """Generate a CSV report"""
         output = io.StringIO()
         writer = csv.writer(output)
@@ -107,21 +111,21 @@ class ReportGenerator:
             # Severity distribution
             writer.writerow(["Severity Distribution"])
             writer.writerow(["Severity", "Count"])
-            for severity, count in stats['severity_counts'].items():
+            for severity, count in cast(dict[str,int],stats['severity_counts']).items():
                 writer.writerow([severity, count])
             writer.writerow([])
             
             # Source distribution
             writer.writerow(["Source Distribution"])
             writer.writerow(["Source", "Count"])
-            for source, count in stats['source_counts'].items():
+            for source, count in cast(dict[str,int],stats['source_counts']).items():
                 writer.writerow([source, count])
             writer.writerow([])
             
             # Hour distribution
             writer.writerow(["Hour Distribution"])
             writer.writerow(["Hour", "Count"])
-            for hour, count in stats['hour_distribution'].items():
+            for hour, count in cast(defaultdict[int,int],stats['hour_distribution']).items():
                 writer.writerow([f"{hour:02d}:00 - {hour:02d}:59", count])
             writer.writerow([])
             
@@ -132,7 +136,7 @@ class ReportGenerator:
             # Common terms
             writer.writerow(["Common Terms"])
             writer.writerow(["Term", "Count"])
-            for term, count in stats['common_terms'].items():
+            for term, count in cast(dict[str,int],stats['common_terms']).items():
                 writer.writerow([term, count])
             writer.writerow([])
         
