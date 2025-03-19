@@ -1,0 +1,4 @@
+__pycache__
+python-example-output.txt
+.vscode
+.pytest_cache
