@@ -3,7 +3,7 @@
 from collections import defaultdict
 import csv
 import io
-from typing_extensions import Any, cast
+from typing import Any, cast
 
 from log_parser import LogEntry
 

@@ -4,7 +4,7 @@ import re
 import datetime
 import csv
 import os
-from typing_extensions import override
+from typing import override
 
 class LogEntry:
     def __init__(self, timestamp:str, severity:str, source:str, message:str):
