@@ -55,5 +55,8 @@ usage: `loglens [-h] [-f {txt,csv}] [-o OUTPUT] [-d DATE_RANGE]
   - Check to see if container has is running or has exited `docker ps –a`  
 - Rebuild Docker image  
   - Rebuild docker image `docker build -t loglens`
+- Verify permissions on docker socket (linux only)
+  - Run as root or add user to docker group ([Guide](https://docs.docker.com/engine/install/linux-postinstall/))
+
 
 For further troubleshooting, see [Troubleshoot Docker Desktop](https://docs.docker.com/desktop/troubleshoot-and-support/troubleshoot/)
